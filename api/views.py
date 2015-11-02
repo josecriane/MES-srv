@@ -1,12 +1,13 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 
 from rest_framework import permissions, viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, list_route
 from rest_framework.reverse import reverse
+from rest_framework.response import Response
 
 from api.models import Device, Command
 from api.serializers import DeviceSerializer, UserSerializer, CommandSerializer
-from api.permissions import IsOwnerOrReadOnly
+from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSame
 
 @api_view(('GET',))
 def api_root(request, format=None):
@@ -23,11 +24,25 @@ class DeviceViewSet(viewsets.ModelViewSet):
     """
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrIsTheSame,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def list(self, request):
+        try:
+            user = User.objects.get(username=request.user.username)
+            owner_elements = [Device.objects.get(owner=user.id)]
+        except:
+            owner_elements = []
+
+        page = self.paginate_queryset(owner_elements)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(owner_elements, many=True)
+        return Response(serializer.data)
 
 class CommandViewSet(viewsets.ModelViewSet):
     """
@@ -36,11 +51,25 @@ class CommandViewSet(viewsets.ModelViewSet):
     """
     queryset = Command.objects.all()
     serializer_class = CommandSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def list(self, request):
+        try:
+            user = User.objects.get(username=request.user.username)
+            owner_elements = [Command.objects.get(owner=user.id)]
+        except:
+            owner_elements = []
+
+        page = self.paginate_queryset(owner_elements)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(owner_elements, many=True)
+        return Response(serializer.data)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """

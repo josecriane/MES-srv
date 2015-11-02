@@ -31,7 +31,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    )
 }
 
 INSTALLED_APPS = (
