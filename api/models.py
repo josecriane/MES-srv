@@ -8,16 +8,17 @@ class Device(models.Model):
     owner = models.ForeignKey('auth.User', related_name='devices')
     configured = models.BooleanField(default=False)
     token = models.CharField(max_length=255, blank=True, default='')
+    token_gcm = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         ordering = ('created',)
 
-class Command(models.Model):
+class Order(models.Model):
     launched = models.DateTimeField(auto_now_add=True)
     name = models.CharField(max_length=40, blank=False)
     params = models.CharField(max_length=255, blank=True, default='')
-    owner = models.ForeignKey('auth.User', related_name='commands')
-    devices = models.ManyToManyField(Device, related_name='commands')
+    owner = models.ForeignKey('auth.User', related_name='orders')
+    devices = models.ManyToManyField(Device, related_name='orders')
 
     class Meta:
         ordering = ('launched',)

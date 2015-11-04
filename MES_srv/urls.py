@@ -19,7 +19,7 @@ from rest_framework.routers import DefaultRouter
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
-router.register(r'commands', views.CommandViewSet)
+router.register(r'orders', views.OrderViewSet)
 router.register(r'devices', views.DeviceViewSet)
 router.register(r'users', views.UserViewSet)
 

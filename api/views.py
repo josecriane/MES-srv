@@ -5,8 +5,8 @@ from rest_framework.decorators import api_view, list_route
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 
-from api.models import Device, Command
-from api.serializers import DeviceSerializer, UserSerializer, CommandSerializer
+from api.models import Device, Order
+from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer
 from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSame
 
 @api_view(('GET',))
@@ -14,7 +14,7 @@ def api_root(request, format=None):
     return Response({
         'users': reverse('user-list', request=request, format=format),
         'devices': reverse('device-list', request=request, format=format),
-        'commands': reverse('command-list', request=request, format=format),
+        'orders': reverse('order-list', request=request, format=format),
     })
 
 class DeviceViewSet(viewsets.ModelViewSet):
@@ -44,13 +44,13 @@ class DeviceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(owner_elements, many=True)
         return Response(serializer.data)
 
-class CommandViewSet(viewsets.ModelViewSet):
+class OrderViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list`, `create`, `retrieve`,
     `update` and `destroy` actions.
     """
-    queryset = Command.objects.all()
-    serializer_class = CommandSerializer
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
     permission_classes = (IsOwnerOrReadOnly,)
 
     def perform_create(self, serializer):
@@ -59,7 +59,7 @@ class CommandViewSet(viewsets.ModelViewSet):
     def list(self, request):
         try:
             user = User.objects.get(username=request.user.username)
-            owner_elements = [Command.objects.get(owner=user.id)]
+            owner_elements = [Order.objects.get(owner=user.id)]
         except:
             owner_elements = []
 

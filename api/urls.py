@@ -17,12 +17,12 @@ device_detail = DeviceViewSet.as_view({
     'delete': 'destroy'
 })
 
-command_list = CommandViewSet.as_view({
+order_list = OrderViewSet.as_view({
     'get': 'list',
     'post': 'create'
 })
 
-command_detail = CommandViewSet.as_view({
+order_detail = OrderViewSet.as_view({
     'get': 'retrieve',
     'put': 'update',
     'patch': 'partial_update',
@@ -39,8 +39,8 @@ user_detail = UserViewSet.as_view({
 
 urlpatterns = format_suffix_patterns([
     url(r'^$', api_root),
-    url(r'^commands/$', command_list, name='command-list'),
-    url(r'^commands/(?P<pk>[0-9]+)/$', command_detail, name='command-detail'),
+    url(r'^orders/$', order_list, name='order-list'),
+    url(r'^orders/(?P<pk>[0-9]+)/$', order_detail, name='order-detail'),
     url(r'^devices/$', device_list, name='device-list'),
     url(r'^devices/(?P<pk>[0-9]+)/$', device_detail, name='device-detail'),
     url(r'^users/$', user_list, name='user-list'),
