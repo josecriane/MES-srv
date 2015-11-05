@@ -8,7 +8,7 @@ class Device(models.Model):
     owner = models.ForeignKey('auth.User', related_name='devices')
     configured = models.BooleanField(default=False)
     token = models.CharField(max_length=255, blank=True, default='')
-    token_gcm = models.CharField(max_length=255, blank=True, default='')
+    tokenGCM = models.CharField(max_length=255, blank=True, default='')
 
     class Meta:
         ordering = ('created',)

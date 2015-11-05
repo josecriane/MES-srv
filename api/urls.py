@@ -17,6 +17,8 @@ device_detail = DeviceViewSet.as_view({
     'delete': 'destroy'
 })
 
+device_setup = DeviceViewSet.as_view({'patch': 'setup'})
+
 order_list = OrderViewSet.as_view({
     'get': 'list',
     'post': 'create'
@@ -43,6 +45,7 @@ urlpatterns = format_suffix_patterns([
     url(r'^orders/(?P<pk>[0-9]+)/$', order_detail, name='order-detail'),
     url(r'^devices/$', device_list, name='device-list'),
     url(r'^devices/(?P<pk>[0-9]+)/$', device_detail, name='device-detail'),
+    url(r'^devices/(?P<pk>[0-9]+)/setup/', device_setup),
     url(r'^users/$', user_list, name='user-list'),
     url(r'^users/(?P<pk>[0-9]+)/$', user_detail, name='user-detail')
 ])

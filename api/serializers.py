@@ -8,7 +8,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Device
-        fields = ('id','created', 'name', 'phone','owner', 'configured', 'token', 'orders')
+        fields = ('id','created', 'name', 'phone','owner', 'configured', 'token', 'orders', 'tokenGCM')
 
     def validate_phone(self, value):
         if False:

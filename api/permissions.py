@@ -14,12 +14,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         # Write permissions are only allowed to the owner of the snippet.
         return obj.owner == request.user
 
-class IsOwnerOrIsTheSame(permissions.BasePermission):
+class IsOwnerOrIsTheSameDevice(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if obj.owner == request.user:
             return True
 
-        if len(request.data.items()) > 0 and obj.id == request.id and obj.uid == request.uid:
+        if request.data.get("uid", None) == obj.uid:
             return True
 
         return False

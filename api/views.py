@@ -1,13 +1,14 @@
 from django.contrib.auth.models import User, AnonymousUser
 
 from rest_framework import permissions, viewsets
-from rest_framework.decorators import api_view, list_route
+from rest_framework.decorators import api_view, list_route, detail_route
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
 
 from api.models import Device, Order
 from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer
-from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSame
+from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice
 
 @api_view(('GET',))
 def api_root(request, format=None):
@@ -24,7 +25,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
     """
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
-    permission_classes = (IsOwnerOrIsTheSame,)
+    permission_classes = (IsOwnerOrIsTheSameDevice,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -43,6 +44,23 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(owner_elements, many=True)
         return Response(serializer.data)
+
+    @detail_route(methods=['PATCH', 'GET'], permission_classes=[IsOwnerOrIsTheSameDevice])
+    def setup(self, request, pk=None):
+        try:
+            device = Device.objects.get(id=pk)
+        except Device.DoesNotExist:
+            return Response({"detail":"Authentication credentials were not provided."}, status=403)
+        
+        self.check_object_permissions(request, device)
+
+        serializer = DeviceSerializer(device, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'result':'ok'})
+        return Response({"detail":"Authentication credentials were not provided."}, status=403)
+
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     """
