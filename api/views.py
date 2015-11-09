@@ -8,7 +8,9 @@ from rest_framework.parsers import JSONParser
 
 from api.models import Device, Order
 from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer
-from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice
+from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice, IsOwner, Always
+
+from gcm_connection.message import Message
 
 @api_view(('GET',))
 def api_root(request, format=None):
@@ -32,8 +34,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         try:
-            user = User.objects.get(username=request.user.username)
-            owner_elements = [Device.objects.get(owner=user.id)]
+            owner_elements = Device.objects.filter(owner=request.user.id)
         except:
             owner_elements = []
 
@@ -69,15 +70,47 @@ class OrderViewSet(viewsets.ModelViewSet):
     """
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsOwner,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def create(self, request):
+        order = request.data
+        user = request.user
+        is_ok = True;
+        serializers = []
+        for device_id in order.get("devices"):
+            device = Device.objects.get(id=device_id)
+            ok_serializer, serializer = self._single_create(user, device, order)
+            is_ok = is_ok and ok_serializer
+            if is_ok:
+                serializers.append(serializer)
+            else:
+                break
+
+        print is_ok
+        if is_ok:
+            for serializer in serializers:
+                serializer.save()
+            return Response({'result':'ok'})
+        else:
+            return Response(status=400)
+
+    def _single_create(self, user, device, order):
+        if user.id == device.owner.id:
+            order["owner"] = user.id
+            serializer = OrderSerializer(data=order)
+            if serializer.is_valid():
+                return True, serializer
+            else:
+                return False, None
+        else:
+            return False, None
+
     def list(self, request):
         try:
-            user = User.objects.get(username=request.user.username)
-            owner_elements = [Order.objects.get(owner=user.id)]
+            owner_elements = Order.objects.filter(owner=request.user.id)
         except:
             owner_elements = []
 

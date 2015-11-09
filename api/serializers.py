@@ -3,7 +3,6 @@ from api.models import Device, Order
 from django.contrib.auth.models import User
 
 class DeviceSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.id')
     orders = serializers.PrimaryKeyRelatedField(many=True, queryset=Order.objects.all())
 
     class Meta:
@@ -16,8 +15,6 @@ class DeviceSerializer(serializers.ModelSerializer):
         return value
 
 class OrderSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.id')
-
     class Meta:
         model = Order
         fields = ('id','launched', 'name', 'params', 'owner','devices')
