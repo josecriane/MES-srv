@@ -78,21 +78,21 @@ class OrderViewSet(viewsets.ModelViewSet):
     def create(self, request):
         order = request.data
         user = request.user
-        is_ok = True;
-        serializers = []
+        is_ok = True
+        devices = []
         for device_id in order.get("devices"):
             device = Device.objects.get(id=device_id)
             ok_serializer, serializer = self._single_create(user, device, order)
             is_ok = is_ok and ok_serializer
-            if is_ok:
-                serializers.append(serializer)
-            else:
+            devices.append(device)
+            if not is_ok:
                 break
 
-        print is_ok
         if is_ok:
-            for serializer in serializers:
-                serializer.save()
+            serializer.save()
+            for device in devices:
+                if (device.configured):
+                    Message(device.tokenGCM, order).send_message()
             return Response({'result':'ok'})
         else:
             return Response(status=400)
