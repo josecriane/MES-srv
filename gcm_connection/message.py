@@ -18,7 +18,8 @@ class Message():
         unirest.post(url, headers=headers, params=params, callback=self.callback)
     
     def callback(self, response):
+        pass
         print "code: " + str(response.code)
-        print "headers: " + str(response.headers)
+        #print "headers: " + str(response.headers)
         print "body: " + str(response.body)
-        print "raw_body: " + str(response.raw_body)
+        #print "raw_body: " + str(response.raw_body)

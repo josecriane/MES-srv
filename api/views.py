@@ -6,8 +6,8 @@ from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 
-from api.models import Device, Order
-from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer
+from api.models import Device, Order, OrderType, DeviceOrder
+from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer, OrderTypeSerializer, DeviceOrderSerializer
 from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice, IsOwner, Always
 
 from gcm_connection.message import Message
@@ -46,13 +46,14 @@ class DeviceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(owner_elements, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['PATCH', 'GET'], permission_classes=[IsOwnerOrIsTheSameDevice])
+    @detail_route(methods=['PATCH'], permission_classes=[IsOwnerOrIsTheSameDevice])
     def setup(self, request, pk=None):
         try:
             device = Device.objects.get(id=pk)
         except Device.DoesNotExist:
             return Response({"detail":"Authentication credentials were not provided."}, status=403)
         
+        print request.data
         self.check_object_permissions(request, device)
 
         serializer = DeviceSerializer(device, data=request.data, partial=True)
@@ -89,10 +90,12 @@ class OrderViewSet(viewsets.ModelViewSet):
                 break
 
         if is_ok:
-            serializer.save()
+            order = serializer.save()
             for device in devices:
-                if (device.configured):
-                    Message(device.tokenGCM, order).send_message()
+                device_order = DeviceOrderSerializer(data={'order':order.id,'device':str(device.id)});
+                if device.configured and device_order.is_valid(): 
+                    Message(device.tokenGCM, serializer.data).send_message()
+                    device_order.save()
             return Response({'result':'ok'})
         else:
             return Response(status=400)
@@ -101,6 +104,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         if user.id == device.owner.id:
             order["owner"] = user.id
             serializer = OrderSerializer(data=order)
+            print serializer
+            print serializer.is_valid()
             if serializer.is_valid():
                 return True, serializer
             else:
@@ -128,3 +133,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+class OrderTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = OrderType.objects.all()
+    serializer_class = OrderTypeSerializer
