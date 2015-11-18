@@ -12,6 +12,8 @@ from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice, IsOwner
 
 from gcm_connection.message import Message
 
+from utils.hash import generate_sha256 
+
 @api_view(('GET',))
 def api_root(request, format=None):
     return Response({
@@ -53,9 +55,10 @@ class DeviceViewSet(viewsets.ModelViewSet):
         except Device.DoesNotExist:
             return Response({"detail":"Authentication credentials were not provided."}, status=403)
         
-        print request.data
         self.check_object_permissions(request, device)
 
+        
+        request.data["token"] = generate_sha256()
         serializer = DeviceSerializer(device, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
