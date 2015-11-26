@@ -3,7 +3,9 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework import renderers
 
-from api.views import DeviceViewSet, UserViewSet, OrderTypeViewSet, api_root
+from api.views.device import DeviceViewSet
+from api.views.order import OrderViewSet, OrderTypeViewSet
+from api.views.user import UserViewSet
 
 device_list = DeviceViewSet.as_view({
     'get': 'list',
