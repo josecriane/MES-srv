@@ -1,14 +1,12 @@
 from django.contrib.auth.models import User, AnonymousUser
 
-from rest_framework import permissions, viewsets
-from rest_framework.decorators import api_view, list_route, detail_route
+from rest_framework import viewsets
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 
-from api.models import Device, Order, OrderType, DeviceOrder
-from api.serializers import DeviceSerializer, UserSerializer, OrderSerializer, OrderTypeSerializer, DeviceOrderSerializer
-from api.permissions import IsOwnerOrReadOnly, IsOwnerOrIsTheSameDevice, IsOwner, Always
+from api.models import Device, Order, OrderType
+from api.serializers import OrderSerializer, OrderTypeSerializer, DeviceOrderSerializer
+from api.permissions import IsOwner
 
 from gcm_connection.message import Message
 
